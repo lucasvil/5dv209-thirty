@@ -1,8 +1,12 @@
 package se.umu.cs.luvi4107.thirty.controller
 
 import android.os.Bundle
+import android.util.Log
+import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import se.umu.cs.luvi4107.thirty.R
 import se.umu.cs.luvi4107.thirty.databinding.ActivityMainBinding
@@ -33,7 +37,6 @@ class MainActivity : AppCompatActivity() {
         // Initialize game and views
         game = Game()
         game.throwDices()
-
         updateAllViews()
 
 
@@ -43,19 +46,27 @@ class MainActivity : AppCompatActivity() {
         val button = binding.button
         button.setOnClickListener {
             when (game.gameState) {
-                0 -> {
+                Game.State.ROUND_THROW -> {
                     game.throwDices()
-                    if (game.gameState == 1){
+                    if (game.gameState == Game.State.ROUND_SCORING){
                         button.text = "CHOOSE"
+                        Toast.makeText(this, "Round over. Select your combinations", Toast.LENGTH_SHORT).show()
                     }
                     updateDiceView()
                 }
-                1 -> {
-                    val rScore = game.finishRound("5")
-                    if (game.gameState == 0){
-                        button.text = "ROLL"
+                Game.State.ROUND_SCORING -> {
+                    try {
+                        game.endRound(
+                            binding.spinner.getItemAtPosition(binding.spinner.selectedItemPosition).toString()
+                        )
+
+                        if (game.gameState == Game.State.ROUND_THROW){
+                            button.text = "ROLL"
+                        }
+                        updateAllViews()
+                    }catch (e:IllegalArgumentException){
+                        Toast.makeText(this, e.message, Toast.LENGTH_SHORT).show()
                     }
-                    updateAllViews()
                 }
             }
 
@@ -67,11 +78,13 @@ class MainActivity : AppCompatActivity() {
         for ((i, dice: Dice) in game.dices.withIndex()) {
             val diceImage = diceImages[i]
             diceImage.setOnClickListener {
-                when (dice.isSelected) {
-                    true -> updateDiceWhite(diceImage, dice.value)
-                    false -> updateDiceGrey(diceImage, dice.value)
+                when(game.gameState){
+                    Game.State.ROUND_THROW -> dice.toggle()
+                    Game.State.ROUND_SCORING -> {
+                        dice.toggle()
+                    }
                 }
-                dice.toggle()
+                updateDiceView()
             }
         }
     }
@@ -79,6 +92,12 @@ class MainActivity : AppCompatActivity() {
     private fun updateAllViews(){
         updateDiceView()
         updateSpinnerView()
+        updateGameInfoView()
+    }
+
+    private fun updateGameInfoView(){
+        binding.roundValue.text = game.round.toString()
+        binding.scoreValue.text = game.score.toString()
     }
 
     private fun updateSpinnerView(){
@@ -94,12 +113,10 @@ class MainActivity : AppCompatActivity() {
             val diceImage = diceImages[i]
 
             // render dice image
-            if (dice.isSelected) {
-                updateDiceGrey(diceImage, dice.value)
-            } else {
-                updateDiceWhite(diceImage, dice.value)
+            when(dice.selected){
+                true -> updateDiceGrey(diceImage, dice.value)
+                false -> updateDiceWhite(diceImage, dice.value)
             }
-
         }
     }
 

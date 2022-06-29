@@ -2,8 +2,7 @@ package se.umu.cs.luvi4107.thirty.model
 
 class Dice: Comparable<Dice> {
     var value : Int = IntRange(1,6).random()
-    var isSelected: Boolean = false
-    var grouped : Boolean = true
+    var selected : Boolean = false
 
     fun roll(): Int {
         value = IntRange(1, 6).random()
@@ -11,7 +10,7 @@ class Dice: Comparable<Dice> {
     }
 
     fun toggle(){
-        isSelected = !isSelected
+        selected = !selected
     }
 
     override fun compareTo(other: Dice): Int {
