@@ -104,16 +104,6 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/scoreText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="10dp"
-        android:text="Score"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/roundText" />
-
-    <TextView
         android:id="@+id/roundValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -122,15 +112,5 @@
         android:text="TextView"
         app:layout_constraintStart_toEndOf="@+id/roundText"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/scoreValue"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="10dp"
-        android:text="TextView"
-        app:layout_constraintStart_toEndOf="@+id/scoreText"
-        app:layout_constraintTop_toBottomOf="@+id/roundValue" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

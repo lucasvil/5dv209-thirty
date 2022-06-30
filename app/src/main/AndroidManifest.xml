@@ -14,7 +14,7 @@
         android:theme="@style/Theme.Thirty"
         tools:targetApi="31">
         <activity
-            android:name=".controller.Result"
+            android:name=".controller.ResultActivity"
             android:exported="false" />
         <activity
             android:name=".controller.MainActivity"
