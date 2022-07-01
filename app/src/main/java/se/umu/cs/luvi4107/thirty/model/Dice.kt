@@ -1,8 +1,16 @@
 package se.umu.cs.luvi4107.thirty.model
 
-class Dice : Comparable<Dice> {
+import android.os.Parcel
+import android.os.Parcelable
+
+class Dice() : Parcelable {
     var value: Int = IntRange(1, 6).random()
     var selected: Boolean = false
+
+    constructor(parcel: Parcel) : this() {
+        value = parcel.readInt()
+        selected = parcel.readByte() != 0.toByte()
+    }
 
     fun roll(): Int {
         value = IntRange(1, 6).random()
@@ -13,12 +21,22 @@ class Dice : Comparable<Dice> {
         selected = !selected
     }
 
-    override fun compareTo(other: Dice): Int {
-        return if (this.value > other.value)
-            1
-        else if (this.value < other.value)
-            -1
-        else
-            0;
+    override fun describeContents(): Int {
+        TODO("Not yet implemented")
+    }
+    
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeInt(value)
+        parcel.writeByte(if (selected) 1 else 0)
+    }
+
+    companion object CREATOR : Parcelable.Creator<Dice> {
+        override fun createFromParcel(parcel: Parcel): Dice {
+            return Dice(parcel)
+        }
+
+        override fun newArray(size: Int): Array<Dice?> {
+            return arrayOfNulls(size)
+        }
     }
 }

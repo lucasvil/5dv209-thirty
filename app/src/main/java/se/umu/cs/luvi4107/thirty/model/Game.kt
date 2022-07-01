@@ -1,15 +1,17 @@
 package se.umu.cs.luvi4107.thirty.model
 
-import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
+import android.os.Parcel
+import android.os.Parcelable
+import android.util.Log
 
 private const val MAX_ROUNDS = 10
 private const val MAX_THROWS = 3
 
-class Game(private val state: SavedStateHandle) : ViewModel() {
-    val dices: ArrayList<Dice> =
+class Game(): Parcelable {
+
+    var dices: ArrayList<Dice> =
         arrayListOf(Dice(), Dice(), Dice(), Dice(), Dice(), Dice()) // dices currently in play
-    val choices: ArrayList<String> = arrayListOf(
+    var choices: ArrayList<String> = arrayListOf(
         "LOW",
         "4",
         "5",
@@ -21,7 +23,7 @@ class Game(private val state: SavedStateHandle) : ViewModel() {
         "11",
         "12"
     ) // choices currently in play
-    val rounds: ArrayList<Round> = ArrayList() // completed rounds
+    var rounds: ArrayList<Round> = ArrayList() // completed rounds
 
     /**
      * Game states:
@@ -30,9 +32,19 @@ class Game(private val state: SavedStateHandle) : ViewModel() {
      * - end of game, maximum rounds reached
      */
     var gameState: State = State.ROUND_THROW
-    private var throws: Int = 0
+    var throws: Int = 1
     var round: Int = 0
 
+    constructor(parcel: Parcel) : this() {
+        throws = parcel.readInt()
+        round = parcel.readInt()
+        gameState = parcel.readSerializable() as State
+
+        dices = parcel.readArrayList(Dice::class.java.classLoader) as ArrayList<Dice>
+        choices = parcel.readArrayList(String::class.java.classLoader) as ArrayList<String>
+        rounds = parcel.readArrayList(Round::class.java.classLoader) as ArrayList<Round>
+        Log.d("asdfg", choices.size.toString())
+    }
 
     /**
      * Throws selected dices, changes gameState on maximum throws reached
@@ -83,7 +95,7 @@ class Game(private val state: SavedStateHandle) : ViewModel() {
         val target = choiceToInt(choice)
 
         // check combinations
-        selectedDices.sortDescending()
+        selectedDices.sortByDescending { it.value }
         var isMarked = BooleanArray(selectedDices.size)
         for (i: Int in selectedDices.indices) {
             if (isMarked[i]) continue
@@ -141,7 +153,31 @@ class Game(private val state: SavedStateHandle) : ViewModel() {
         }
     }
 
-    enum class State {
-        ROUND_THROW, ROUND_SCORING, GAME_END
+    enum class State(i: Int) {
+        ROUND_THROW(0), ROUND_SCORING(1), GAME_END(2)
+    }
+
+    override fun describeContents(): Int {
+        TODO("Not yet implemented")
+    }
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeInt(throws)
+        parcel.writeInt(round)
+        parcel.writeSerializable(gameState)
+
+        parcel.writeList(dices)
+        parcel.writeList(choices)
+        parcel.writeList(rounds)
+    }
+
+    companion object CREATOR : Parcelable.Creator<Game> {
+        override fun createFromParcel(parcel: Parcel): Game {
+            return Game(parcel)
+        }
+
+        override fun newArray(size: Int): Array<Game?> {
+            return arrayOfNulls(size)
+        }
     }
 }

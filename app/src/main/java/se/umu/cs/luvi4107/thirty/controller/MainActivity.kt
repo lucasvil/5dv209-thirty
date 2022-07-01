@@ -8,11 +8,13 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import se.umu.cs.luvi4107.thirty.R
 import se.umu.cs.luvi4107.thirty.databinding.ActivityMainBinding
 import se.umu.cs.luvi4107.thirty.model.Dice
 import se.umu.cs.luvi4107.thirty.model.Game
 
+private const val GAME_KEY = "se.umu.cs.luvi4107.thirty.stateKey"
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -34,28 +36,28 @@ class MainActivity : AppCompatActivity() {
         )
 
         // Initialize game and views
-        game = Game()
-        game.throwDices()
+        //game = ViewModelProvider(this).get(Game::class.java)
+        game = if(savedInstanceState != null){
+            savedInstanceState.getParcelable<Game>(GAME_KEY)?: Game()
+        }else{
+            Game()
+        }
         updateAllViews()
 
 
-//        if(savedInstanceState != null){
-//            game = savedInstanceState.getParcelable<Game>(gameKey)?: Game()
-//        }
+
         val button = binding.button
         button.setOnClickListener {
             when (game.gameState) {
                 Game.State.ROUND_THROW -> {
                     game.throwDices()
                     if (game.gameState == Game.State.ROUND_SCORING) {
-                        button.text = "CHOOSE"
                         Toast.makeText(
                             this,
                             "Round over. Select your combinations",
                             Toast.LENGTH_SHORT
                         ).show()
                     }
-                    updateDiceView()
                 }
                 Game.State.ROUND_SCORING -> {
                     try {
@@ -63,11 +65,6 @@ class MainActivity : AppCompatActivity() {
                             binding.spinner.getItemAtPosition(binding.spinner.selectedItemPosition)
                                 .toString()
                         )
-
-                        if (game.gameState == Game.State.ROUND_THROW) {
-                            button.text = "ROLL"
-                        }
-                        updateAllViews()
                     } catch (e: IllegalArgumentException) {
                         Toast.makeText(this, e.message, Toast.LENGTH_SHORT).show()
                     }
@@ -82,6 +79,7 @@ class MainActivity : AppCompatActivity() {
                     )
                 )
             }
+            updateAllViews()
         }
         // set listener to toggle selected dice
         for ((i, dice: Dice) in game.dices.withIndex()) {
@@ -101,7 +99,7 @@ class MainActivity : AppCompatActivity() {
     private val resultLauncher: ActivityResultLauncher<Intent> = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) {
-        game = Game()
+        //game = Game()
         updateAllViews()
     }
 
@@ -109,6 +107,14 @@ class MainActivity : AppCompatActivity() {
         updateDiceView()
         updateSpinnerView()
         updateRoundCounter()
+        updateButtonView()
+    }
+
+    private fun updateButtonView(){
+        when(game.gameState){
+            Game.State.ROUND_THROW -> binding.button.text = "ROLL"
+            Game.State.ROUND_SCORING -> binding.button.text = "CHOOSE"
+        }
     }
 
     private fun updateRoundCounter() {
@@ -174,8 +180,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-//    override fun onSaveInstanceState(outState: Bundle) {
-//        super.onSaveInstanceState(outState)
-//        outState.putParcelable(gameKey, game)
-//    }
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putParcelable(GAME_KEY, game)
+    }
 }
