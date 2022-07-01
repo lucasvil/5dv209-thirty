@@ -15,10 +15,24 @@ import se.umu.cs.luvi4107.thirty.model.Game
 
 private const val GAME_KEY = "se.umu.cs.luvi4107.thirty.stateKey"
 
+/**
+ * Main activity acting as controller, handling UI events of the main view.
+ */
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var diceImages: ArrayList<ImageView>
     private lateinit var game: Game
+
+    /**
+     * ActivityResultLauncher for starting the ResultActivity
+     */
+    private val resultLauncher: ActivityResultLauncher<Intent> = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        game.newGame()
+        updateAllViews()
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,14 +54,19 @@ class MainActivity : AppCompatActivity() {
             Game()
         }
         updateAllViews()
+        setButtonListener()
+        setDiceImageListener()
+    }
 
-
-        val button = binding.button
-        button.setOnClickListener {
+    /**
+     * Sets up the button event listener.
+     */
+    private fun setButtonListener() {
+        binding.button.setOnClickListener {
             when (game.gameState) {
                 Game.State.ROUND_THROW -> {
                     game.throwDices()
-                    if (game.gameState == Game.State.ROUND_SCORING) {
+                    if (game.gameState == Game.State.ROUND_SCORE) {
                         Toast.makeText(
                             this,
                             "Round over. Select your combinations",
@@ -57,7 +76,7 @@ class MainActivity : AppCompatActivity() {
                     }
                     updateDiceView()
                 }
-                Game.State.ROUND_SCORING -> {
+                Game.State.ROUND_SCORE -> {
                     try {
                         game.endRound(
                             binding.spinner.getItemAtPosition(binding.spinner.selectedItemPosition)
@@ -81,7 +100,12 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-        // set listener to toggle selected dice
+    }
+
+    /**
+     * Sets up the dice image event listener
+     */
+    private fun setDiceImageListener() {
         for ((i, dice: Dice) in game.dices.withIndex()) {
             val diceImage = diceImages[i]
             diceImage.setOnClickListener {
@@ -93,13 +117,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private val resultLauncher: ActivityResultLauncher<Intent> = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) {
-        game.newGame()
-        updateAllViews()
-    }
-
+    /**
+     * Updates all views.
+     */
     private fun updateAllViews() {
         updateDiceView()
         updateSpinnerView()
@@ -107,15 +127,24 @@ class MainActivity : AppCompatActivity() {
         updateButtonView()
     }
 
+    /**
+     * Updates the button.
+     */
     private fun updateButtonView() {
         if (game.gameState == Game.State.ROUND_THROW) binding.button.setText(R.string.button_roll)
-        else if (game.gameState == Game.State.ROUND_SCORING) binding.button.setText(R.string.button_choose)
+        else if (game.gameState == Game.State.ROUND_SCORE) binding.button.setText(R.string.button_choose)
     }
 
+    /**
+     * Updates the round counter text.
+     */
     private fun updateRoundCounter() {
         (game.round + 1).also { binding.roundCounter.text = getString(R.string.round_counter, it) }
     }
 
+    /**
+     * Updates the values in the spinner.
+     */
     private fun updateSpinnerView() {
         binding.spinner.adapter = ArrayAdapter(
             this,
@@ -123,6 +152,9 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
+    /**
+     * Updates all the dices.
+     */
     private fun updateDiceView() {
         val dices = game.dices
         for ((i, dice: Dice) in dices.withIndex()) {
@@ -137,7 +169,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Updates a dice image to a corresponding value
+     * Updates a dice image to a corresponding value (white)
      */
     private fun updateDiceWhite(img: ImageView, value: Int) {
         when (value) {
@@ -151,6 +183,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Updates a dice image to a corresponding value (grey)
+     */
     private fun updateDiceGrey(img: ImageView, value: Int) {
         when (value) {
             1 -> img.setImageResource(R.drawable.grey1)

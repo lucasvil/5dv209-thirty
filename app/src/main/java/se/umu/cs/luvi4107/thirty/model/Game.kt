@@ -2,14 +2,24 @@ package se.umu.cs.luvi4107.thirty.model
 
 import android.os.Parcel
 import android.os.Parcelable
+import se.umu.cs.luvi4107.thirty.model.Game.State.*
 
-private const val MAX_ROUNDS = 2
+private const val MAX_ROUNDS = 10
 private const val MAX_THROWS = 3
 
+/**
+ * Represents a Game of Thirty. Implements the Parcelable interface.
+ * @property dices - ArrayList of dices currently in play.
+ * @property choices - ArrayList of choices currently in play.
+ * @property rounds - ArrayList of completed rounds.
+ * @property gameState - Represents the current state of the game.
+ * @property throws - The number of throws in the current round.
+ * @property round - The current round.
+ */
 class Game() : Parcelable {
 
     var dices: ArrayList<Dice> =
-        arrayListOf(Dice(), Dice(), Dice(), Dice(), Dice(), Dice()) // dices currently in play
+        arrayListOf(Dice(), Dice(), Dice(), Dice(), Dice(), Dice())
     var choices: ArrayList<String> = arrayListOf(
         "LOW",
         "4",
@@ -21,15 +31,8 @@ class Game() : Parcelable {
         "10",
         "11",
         "12"
-    ) // choices currently in play
-    var rounds: ArrayList<Round> = ArrayList() // completed rounds
-
-    /**
-     * Game states:
-     * - user throwing dices
-     * - user selecting combinations (end of round)
-     * - end of game, maximum rounds reached
-     */
+    )
+    var rounds: ArrayList<Round> = ArrayList()
     var gameState: State = State.ROUND_THROW
     var throws: Int = 1
     var round: Int = 0
@@ -37,7 +40,7 @@ class Game() : Parcelable {
     constructor(parcel: Parcel) : this() {
         throws = parcel.readInt()
         round = parcel.readInt()
-        gameState = parcel.readSerializable() as State
+        gameState = parcel.readString()?.let { State.valueOf(it) }!!
 
         dices = parcel.readArrayList(Dice::class.java.classLoader) as ArrayList<Dice>
         choices = parcel.readArrayList(String::class.java.classLoader) as ArrayList<String>
@@ -45,7 +48,7 @@ class Game() : Parcelable {
     }
 
     /**
-     * Throws selected dices, changes gameState on maximum throws reached
+     * Roll all selected dices.
      */
     fun throwDices() {
         if (throws < MAX_THROWS) {
@@ -56,13 +59,16 @@ class Game() : Parcelable {
             }
             throws++
             if (throws == MAX_THROWS) {
-                gameState = State.ROUND_SCORING
+                gameState = State.ROUND_SCORE
             }
         }
     }
 
     /**
-     * Adds the round score to the total and starts a new round.
+     * Ends the current round. Validates that the selected combination of dices
+     * are valid for the chosen sum.
+     * @throws IllegalArgumentException - when the selected dice combination is invalid.
+     * @param choice - String representing the chosen sum to combine the dices into.
      */
     fun endRound(choice: String) {
         val selectedDices: ArrayList<Dice> = ArrayList()
@@ -89,6 +95,9 @@ class Game() : Parcelable {
         }
     }
 
+    /**
+     * Starts a new game for the Game instance.
+     */
     fun newGame() {
         choices = arrayListOf(
             "LOW",
@@ -111,6 +120,12 @@ class Game() : Parcelable {
         throwDices()
     }
 
+    /**
+     * Checks that a set of dices are valid given a certain choice
+     * @throws IllegalArgumentException - if the combination is invalid.
+     * @param choice - String representing the chosen sum to combine the dices into.
+     * @param selectedDices - ArrayList containing the combination of dices to validate.
+     */
     private fun validateScore(choice: String, selectedDices: ArrayList<Dice>) {
         val target = choiceToInt(choice)
 
@@ -143,6 +158,12 @@ class Game() : Parcelable {
         if (isMarked.any { !it }) throw IllegalArgumentException("Invalid dice combination(s) selected.")
     }
 
+    /**
+     * Marks indices of a BooleanArray as true given a list of indices.
+     * @throws ArrayIndexOutOfBoundsException - If the index array contains an index out of bounds.
+     * @param bArray - BooleanArray to mark.
+     * @param toMark - List of indices to mark.
+     */
     private fun mark(bArray: BooleanArray, toMark: ArrayList<Int>): BooleanArray {
         for (i: Int in toMark) {
             bArray[i] = true
@@ -150,6 +171,9 @@ class Game() : Parcelable {
         return bArray
     }
 
+    /**
+     * Deselects all dices.
+     */
     private fun deselectAll() {
         for (dice: Dice in dices) {
             if (dice.selected)
@@ -157,6 +181,10 @@ class Game() : Parcelable {
         }
     }
 
+    /**
+     * Helper function to convert a choice String to an Int value
+     * @param choice - choice to convert.
+     */
     private fun choiceToInt(choice: String): Int {
         return when (choice) {
             "LOW" -> 3
@@ -173,8 +201,14 @@ class Game() : Parcelable {
         }
     }
 
-    enum class State(i: Int) {
-        ROUND_THROW(0), ROUND_SCORING(1), GAME_END(2)
+    /**
+     * Enum class representing the states of a game of Thirty.
+     * @property ROUND_THROW- user throwing dices
+     * @property ROUND_SCORE- user selecting combinations (end of round)
+     * @property GAME_END - end of game, maximum rounds reached
+     */
+    enum class State(s: String) {
+        ROUND_THROW("ROUND_THROW"), ROUND_SCORE("ROUND_SCORE"), GAME_END("GAME_END");
     }
 
     override fun describeContents(): Int {
@@ -184,7 +218,7 @@ class Game() : Parcelable {
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeInt(throws)
         parcel.writeInt(round)
-        parcel.writeSerializable(gameState)
+        parcel.writeString(gameState.name)
 
         parcel.writeList(dices)
         parcel.writeList(choices)

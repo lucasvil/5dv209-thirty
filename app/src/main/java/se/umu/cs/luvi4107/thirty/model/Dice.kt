@@ -3,6 +3,11 @@ package se.umu.cs.luvi4107.thirty.model
 import android.os.Parcel
 import android.os.Parcelable
 
+/**
+ * Represents a Dice in a game of Thirty
+ * @property value - the value of the dice (1-6)
+ * @property selected - indicates whether dice is currently selected.
+ */
 class Dice() : Parcelable {
     var value: Int = IntRange(1, 6).random()
     var selected: Boolean = false
@@ -12,11 +17,17 @@ class Dice() : Parcelable {
         selected = parcel.readByte() != 0.toByte()
     }
 
+    /**
+     * Roll the dice.
+     */
     fun roll(): Int {
         value = IntRange(1, 6).random()
         return value
     }
 
+    /**
+     * Toggle whether dice is selected.
+     */
     fun toggle() {
         selected = !selected
     }

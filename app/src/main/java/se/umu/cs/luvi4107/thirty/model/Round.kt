@@ -3,6 +3,11 @@ package se.umu.cs.luvi4107.thirty.model
 import android.os.Parcel
 import android.os.Parcelable
 
+/**
+ * Represents the result of a completed round in a game of Thirty
+ * @param choice - the value representing the chosen sum to combine the dices into.
+ * @param combination - An ArrayList of the dice values combined for this round.
+ */
 data class Round(val choice: String?, val combination: ArrayList<Int>) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readString(),
