@@ -17,8 +17,7 @@ class ResultActivity : AppCompatActivity() {
         binding = ActivityResultBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        @Suppress("UNCHECKED_CAST")
-        val rounds = intent.getSerializableExtra(EXTRA_ROUNDS) as? ArrayList<Round>
+        val rounds = intent.getParcelableArrayListExtra<Round>(EXTRA_ROUNDS)
         populateScoreList(rounds)
         setTotalScore(rounds)
         setButtonListener()
@@ -58,7 +57,7 @@ class ResultActivity : AppCompatActivity() {
 
         fun newIntent(packageContext: Context, rounds: ArrayList<Round>): Intent {
             return Intent(packageContext, ResultActivity::class.java).apply {
-                putExtra(EXTRA_ROUNDS, rounds)
+                putParcelableArrayListExtra(EXTRA_ROUNDS, rounds)
             }
         }
     }

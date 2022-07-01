@@ -8,7 +8,6 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
 import se.umu.cs.luvi4107.thirty.R
 import se.umu.cs.luvi4107.thirty.databinding.ActivityMainBinding
 import se.umu.cs.luvi4107.thirty.model.Dice
@@ -37,13 +36,12 @@ class MainActivity : AppCompatActivity() {
 
         // Initialize game and views
         //game = ViewModelProvider(this).get(Game::class.java)
-        game = if(savedInstanceState != null){
-            savedInstanceState.getParcelable<Game>(GAME_KEY)?: Game()
-        }else{
+        game = if (savedInstanceState != null) {
+            savedInstanceState.getParcelable<Game>(GAME_KEY) ?: Game()
+        } else {
             Game()
         }
         updateAllViews()
-
 
 
         val button = binding.button
@@ -99,7 +97,7 @@ class MainActivity : AppCompatActivity() {
     private val resultLauncher: ActivityResultLauncher<Intent> = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) {
-        //game = Game()
+        game.newGame()
         updateAllViews()
     }
 
@@ -110,8 +108,8 @@ class MainActivity : AppCompatActivity() {
         updateButtonView()
     }
 
-    private fun updateButtonView(){
-        when(game.gameState){
+    private fun updateButtonView() {
+        when (game.gameState) {
             Game.State.ROUND_THROW -> binding.button.text = "ROLL"
             Game.State.ROUND_SCORING -> binding.button.text = "CHOOSE"
         }

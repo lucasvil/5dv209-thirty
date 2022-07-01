@@ -2,12 +2,11 @@ package se.umu.cs.luvi4107.thirty.model
 
 import android.os.Parcel
 import android.os.Parcelable
-import android.util.Log
 
 private const val MAX_ROUNDS = 10
 private const val MAX_THROWS = 3
 
-class Game(): Parcelable {
+class Game() : Parcelable {
 
     var dices: ArrayList<Dice> =
         arrayListOf(Dice(), Dice(), Dice(), Dice(), Dice(), Dice()) // dices currently in play
@@ -43,7 +42,6 @@ class Game(): Parcelable {
         dices = parcel.readArrayList(Dice::class.java.classLoader) as ArrayList<Dice>
         choices = parcel.readArrayList(String::class.java.classLoader) as ArrayList<String>
         rounds = parcel.readArrayList(Round::class.java.classLoader) as ArrayList<Round>
-        Log.d("asdfg", choices.size.toString())
     }
 
     /**
@@ -89,6 +87,29 @@ class Game(): Parcelable {
             deselectAll()
             throwDices()
         }
+    }
+
+    fun newGame() {
+        dices =
+            arrayListOf(Dice(), Dice(), Dice(), Dice(), Dice(), Dice())
+        choices = arrayListOf(
+            "LOW",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12"
+        )
+        rounds = ArrayList()
+
+        gameState = State.ROUND_THROW
+        throws = 0
+        round = 0
+        throwDices()
     }
 
     private fun validateScore(choice: String, selectedDices: ArrayList<Dice>) {

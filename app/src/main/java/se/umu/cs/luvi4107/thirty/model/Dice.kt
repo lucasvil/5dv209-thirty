@@ -24,7 +24,7 @@ class Dice() : Parcelable {
     override fun describeContents(): Int {
         TODO("Not yet implemented")
     }
-    
+
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeInt(value)
         parcel.writeByte(if (selected) 1 else 0)
