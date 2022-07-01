@@ -3,7 +3,7 @@ package se.umu.cs.luvi4107.thirty.model
 import android.os.Parcel
 import android.os.Parcelable
 
-private const val MAX_ROUNDS = 10
+private const val MAX_ROUNDS = 2
 private const val MAX_THROWS = 3
 
 class Game() : Parcelable {
@@ -90,8 +90,6 @@ class Game() : Parcelable {
     }
 
     fun newGame() {
-        dices =
-            arrayListOf(Dice(), Dice(), Dice(), Dice(), Dice(), Dice())
         choices = arrayListOf(
             "LOW",
             "4",
@@ -109,6 +107,7 @@ class Game() : Parcelable {
         gameState = State.ROUND_THROW
         throws = 0
         round = 0
+        deselectAll()
         throwDices()
     }
 

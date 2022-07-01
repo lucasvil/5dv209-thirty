@@ -25,19 +25,17 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        diceImages = arrayListOf<ImageView>(
+        arrayListOf(
             binding.dice1,
             binding.dice2,
             binding.dice3,
             binding.dice4,
             binding.dice5,
             binding.dice6,
-        )
+        ).also { diceImages = it }
 
-        // Initialize game and views
-        //game = ViewModelProvider(this).get(Game::class.java)
         game = if (savedInstanceState != null) {
-            savedInstanceState.getParcelable<Game>(GAME_KEY) ?: Game()
+            savedInstanceState.getParcelable(GAME_KEY) ?: Game()
         } else {
             Game()
         }
@@ -55,7 +53,9 @@ class MainActivity : AppCompatActivity() {
                             "Round over. Select your combinations",
                             Toast.LENGTH_SHORT
                         ).show()
+                        updateButtonView()
                     }
+                    updateDiceView()
                 }
                 Game.State.ROUND_SCORING -> {
                     try {
@@ -69,27 +69,26 @@ class MainActivity : AppCompatActivity() {
                     if (game.gameState == Game.State.GAME_END) {
                         resultLauncher.launch(ResultActivity.newIntent(this, game.rounds))
                     }
+                    updateAllViews()
                 }
-                Game.State.GAME_END -> resultLauncher.launch(
-                    ResultActivity.newIntent(
-                        this,
-                        game.rounds
+                Game.State.GAME_END -> {
+                    resultLauncher.launch(
+                        ResultActivity.newIntent(
+                            this,
+                            game.rounds
+                        )
                     )
-                )
+                }
             }
-            updateAllViews()
         }
         // set listener to toggle selected dice
         for ((i, dice: Dice) in game.dices.withIndex()) {
             val diceImage = diceImages[i]
             diceImage.setOnClickListener {
-                when (game.gameState) {
-                    Game.State.ROUND_THROW -> dice.toggle()
-                    Game.State.ROUND_SCORING -> {
-                        dice.toggle()
-                    }
+                if (game.gameState !== Game.State.GAME_END) {
+                    dice.toggle()
+                    updateDiceView()
                 }
-                updateDiceView()
             }
         }
     }
@@ -109,18 +108,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateButtonView() {
-        when (game.gameState) {
-            Game.State.ROUND_THROW -> binding.button.text = "ROLL"
-            Game.State.ROUND_SCORING -> binding.button.text = "CHOOSE"
-        }
+        if (game.gameState == Game.State.ROUND_THROW) binding.button.setText(R.string.button_roll)
+        else if (game.gameState == Game.State.ROUND_SCORING) binding.button.setText(R.string.button_choose)
     }
 
     private fun updateRoundCounter() {
-        (game.round + 1).toString().also { binding.roundValue.text = it }
+        (game.round + 1).also { binding.roundCounter.text = getString(R.string.round_counter, it) }
     }
 
     private fun updateSpinnerView() {
-        binding.spinner.adapter = ArrayAdapter<String>(
+        binding.spinner.adapter = ArrayAdapter(
             this,
             android.R.layout.simple_spinner_item, game.choices
         )
@@ -162,18 +159,6 @@ class MainActivity : AppCompatActivity() {
             4 -> img.setImageResource(R.drawable.grey4)
             5 -> img.setImageResource(R.drawable.grey5)
             6 -> img.setImageResource(R.drawable.grey6)
-
-        }
-    }
-
-    private fun updateDiceRed(img: ImageView, value: Int) {
-        when (value) {
-            1 -> img.setImageResource(R.drawable.red1)
-            2 -> img.setImageResource(R.drawable.red2)
-            3 -> img.setImageResource(R.drawable.red3)
-            4 -> img.setImageResource(R.drawable.red4)
-            5 -> img.setImageResource(R.drawable.red5)
-            6 -> img.setImageResource(R.drawable.red6)
 
         }
     }

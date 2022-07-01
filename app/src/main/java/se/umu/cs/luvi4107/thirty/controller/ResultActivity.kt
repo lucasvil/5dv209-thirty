@@ -36,7 +36,7 @@ class ResultActivity : AppCompatActivity() {
                     this,
                     android.R.layout.simple_list_item_1,
                     rounds.mapIndexed { i, (choice, combination) ->
-                        "Round: ${i + 1}: ${combination.sum()} ($choice for $combination)"
+                        getString(R.string.round_score, i+1, combination.sum(), choice, combination)
                     })
         }
 
