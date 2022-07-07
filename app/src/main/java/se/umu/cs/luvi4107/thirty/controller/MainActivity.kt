@@ -82,13 +82,13 @@ class MainActivity : AppCompatActivity() {
                             binding.spinner.getItemAtPosition(binding.spinner.selectedItemPosition)
                                 .toString()
                         )
+                        updateAllViews()
                     } catch (e: IllegalArgumentException) {
                         Toast.makeText(this, e.message, Toast.LENGTH_SHORT).show()
                     }
                     if (game.gameState == Game.State.GAME_END) {
                         resultLauncher.launch(ResultActivity.newIntent(this, game.rounds))
                     }
-                    updateAllViews()
                 }
                 Game.State.GAME_END -> {
                     resultLauncher.launch(
