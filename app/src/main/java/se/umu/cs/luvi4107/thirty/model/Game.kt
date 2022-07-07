@@ -78,7 +78,11 @@ class Game() : Parcelable {
             }
         }
 
-        validateScore(choice, selectedDices)
+        if (choice == "LOW") {
+            validateLowScore(choiceToInt(choice), selectedDices)
+        } else {
+            validateScore(choiceToInt(choice), selectedDices)
+        }
 
         //update game state objects
         choices.remove(choice)
@@ -121,16 +125,28 @@ class Game() : Parcelable {
     }
 
     /**
-     * Checks that a set of dices are valid given a certain choice
+     * Checks that a set of dices are valid given a "low" choice
      * @throws IllegalArgumentException - if the combination is invalid.
-     * @param choice - String representing the chosen sum to combine the dices into.
+     * @param low - the low value
      * @param selectedDices - ArrayList containing the combination of dices to validate.
      */
-    private fun validateScore(choice: String, selectedDices: ArrayList<Dice>) {
-        val target = choiceToInt(choice)
+    private fun validateLowScore(low: Int, selectedDices: ArrayList<Dice>) {
+        for (dice: Dice in selectedDices) {
+            if (dice.value > low) {
+                throw IllegalArgumentException("Only values less than $low are allowed for LOW.")
+            }
+        }
+    }
 
-        // check combinations
+    /**
+     * Checks that a set of dices are valid given a certain choice
+     * @throws IllegalArgumentException - if the combination is invalid.
+     * @param target - the chosen sum to combine the dices into.
+     * @param selectedDices - ArrayList containing the combination of dices to validate.
+     */
+    private fun validateScore(target: Int, selectedDices: ArrayList<Dice>) {
         selectedDices.sortByDescending { it.value }
+
         var isMarked = BooleanArray(selectedDices.size)
         for (i: Int in selectedDices.indices) {
             if (isMarked[i]) continue
