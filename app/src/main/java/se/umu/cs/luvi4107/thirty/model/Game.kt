@@ -167,8 +167,7 @@ class Game() : Parcelable {
                 } else if (sum > target) {
                     combination.remove(j)
                     sum -= selectedDices[j].value
-                    continue
-                } else continue
+                }
             }
         }
         if (isMarked.any { !it }) throw IllegalArgumentException("Invalid dice combination(s) selected.")
